@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 class Task1 {
     public static int[] delta(int[] numbers) {
@@ -11,15 +12,10 @@ class Task1 {
     }
 
     public static int[] delta2(int[] numbers, int skip) {
-        int[] ret = new int[numbers.length - 1];
-        for (int i = 0; i < ret.length; i++) {
-            if (i >= skip) {
-                ret[i] = numbers[i + 1];
-            }
-            else {
-                ret[i] = numbers[i];
-            }
-        }
+        int[] ret = IntStream.range(0, numbers.length)
+                .filter(i -> i != skip)
+                .map(i -> numbers[i])
+                .toArray();
         return delta(ret);
     }
 
