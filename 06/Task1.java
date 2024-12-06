@@ -1,13 +1,16 @@
 import java.util.*;
 
 class Task1 {
-    static int task1(List<String> lines, int i, int j) {
-        boolean[][] visited = new boolean[lines.size()][lines.get(0).length()];
+    static int task1(char[][] grid, int i, int j) {
+        boolean[][] visited = new boolean[grid.length][grid[0].length];
         int di = -1;
         int dj = 0;
         int ret = 0;
-        while (i >= 0 && i < lines.size() && j >= 0 && j < lines.get(0).length()) {
-            if (lines.get(i).charAt(j) == '#') {
+        int n = 0;
+        while (i >= 0 && i < grid.length && j >= 0 && j < grid[0].length) {
+            if (n > 130*130)
+                return -1;
+            if (grid[i][j] == '#') {
                 int tmp = di;
                 i -= di;
                 j -= dj;
@@ -21,6 +24,27 @@ class Task1 {
             visited[i][j] = true;
             i += di;
             j += dj;
+            n++;
+        }
+        return ret;
+    }
+
+    static int task2(char[][] grid, int startLine, int startCol) {
+        int ret = 0;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[0].length; j++) {
+                if (grid[i][j] == '#') {
+                    continue;
+                }
+                if (i == startLine && j == startCol) {
+                    continue;
+                }
+                grid[i][j] = '#';
+                if (task1(grid, startLine, startCol) == -1) {
+                    ret++;
+                }
+                grid[i][j] = '.';
+            }
         }
         return ret;
     }
@@ -38,6 +62,11 @@ class Task1 {
                 startCol = line.indexOf('^');
             }
         }
-        System.out.println(task1(lines, startLine, startCol));
+        char[][] grid = new char[lines.size()][lines.get(0).length()];
+        for (int i = 0; i < lines.size(); i++) {
+            grid[i] = lines.get(i).toCharArray();
+        }
+        System.out.println(task1(grid, startLine, startCol));
+        System.out.println(task2(grid, startLine, startCol));
     }
 }
