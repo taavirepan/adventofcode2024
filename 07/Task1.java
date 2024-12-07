@@ -14,12 +14,17 @@ class Task1 {
         BigInteger a = numbers[0];
         BigInteger b = numbers[1];
 
+        numbers2[0] = new BigInteger(a.toString() + b.toString());
+        if (numbers2[0].compareTo(target) <= 0 && solve(target, numbers2)) {
+            return true;
+        }
+
         numbers2[0] = a.multiply(b);
-        if (a.multiply(b).compareTo(target) <= 0 && solve(target, numbers2)) {
+        if (numbers2[0].compareTo(target) <= 0 && solve(target, numbers2)) {
             return true;
         }
         numbers2[0] = a.add(b);
-        return a.add(b).compareTo(target) <= 0 && solve(target, numbers2);
+        return numbers2[0].compareTo(target) <= 0 && solve(target, numbers2);
     }
 
     public static void main(String[] args) {
