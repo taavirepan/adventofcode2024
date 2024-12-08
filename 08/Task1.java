@@ -73,7 +73,8 @@ class Task1 {
                 IntPair p2 = points.get(j);
                 IntPair d = p2.diff(p1);
 
-                for (int k = 1; k <= max_dist; k++) {
+                int start = max_dist == 2 ? 2 : 1;
+                for (int k = start; k <= max_dist; k++) {
                     IntPair n1 = p1.add(d, k);
                     IntPair n2 = p2.add(d, -k);
                     if (n1.is_on_grid(size)) {
@@ -94,11 +95,11 @@ class Task1 {
         int size = map.get('.').get(0).first;
         for (char c : map.keySet()) {
             if (c != '.') {
-                // solve(map.get(c), size, antinodes1, 1);
+                solve(map.get(c), size, antinodes1, 2);
                 solve(map.get(c), size, antinodes2, size);
             }
         }
-        // System.out.println(antinodes1.size());
+        System.out.println(antinodes1.size());
         System.out.println(antinodes2.size());
     }
 }
