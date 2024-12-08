@@ -2,8 +2,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.Set;
+
 class IntPair {
     int first;
     int second;
@@ -32,12 +34,15 @@ class IntPair {
 
     @Override
     public boolean equals(Object other) {
-        return first == ((IntPair) other).first && second == ((IntPair) other).second;
+        if (this == other) return true;
+        if (!(other instanceof IntPair)) return false;
+        IntPair otherPair = (IntPair) other;
+        return first == otherPair.first && second == otherPair.second;
     }
 
     @Override
     public int hashCode() {
-        return first * 1000000 + second;
+        return Objects.hash(first, second);
     }
 }
 
