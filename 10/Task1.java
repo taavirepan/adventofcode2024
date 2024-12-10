@@ -5,6 +5,57 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
 
+interface TryMove<T> {
+    T tryMove(T current, int dx, int dy);
+}   
+
+interface GetPosition<T> {
+    int[] getPosition(T current);
+}
+
+class Search<T>
+{
+    int[][] grid;
+    Queue<T> queue;
+    GetPosition<T> getPosition;
+
+    public Search(int[][] grid, T start, GetPosition<T> getPosition) {
+        this.grid = grid;
+        this.queue = new LinkedList<>();
+        this.queue.add(start);
+        this.getPosition = getPosition;
+    }
+
+    public int search(TryMove<T> tryMove) {
+        int ret = 0;
+        while (!queue.isEmpty()) {
+            T current = queue.poll();
+            int[] position = getPosition.getPosition(current);
+            int x = position[0];    
+            int y = position[1];
+            if (grid[x][y] == 9) {
+                ret ++;
+            }
+            int[] dx = { 1, -1, 0, 0 };
+            int[] dy = { 0, 0, 1, -1 };
+            for (int d = 0; d < 4; d++) {
+                int xn = x + dx[d];
+                int yn = y + dy[d];
+                if (xn < 0 || xn >= grid.length || yn < 0 || yn >= grid[0].length) {
+                    continue;
+                }
+                if (grid[xn][yn] - grid[x][y] != 1) {
+                    continue;
+                }
+                T next = tryMove.tryMove(current, xn, yn);
+                if (next != null) {
+                    queue.add(next);
+                }
+            }
+        }
+        return ret;
+    }
+}
 
 class Task1 {
     static int[][] readGrid() {
@@ -23,70 +74,31 @@ class Task1 {
     }
 
     static int destinations(int[][] grid, int i, int j) {
-        int ret = 0;
         boolean[][] visited = new boolean[grid.length][grid[0].length];
-        Queue<int[]> queue = new LinkedList<>();
-        queue.add(new int[] { i, j });
-        while (!queue.isEmpty()) {
-            int[] current = queue.poll();
-            int x = current[0];
-            int y = current[1];
-            if (visited[x][y]) {
-                continue;
+        Search<int[]> search = new Search<>(grid, new int[] { i, j }, (int[] current) -> {
+            return current;
+        });
+        return search.search((int[] current, int xn, int yn) -> {
+            if (visited[xn][yn]) {
+                return null;
             }
-            if (grid[x][y] == 9) {
-                ret ++;
-            }
-            visited[x][y] = true;
-            int[] dx = { 1, -1, 0, 0 };
-            int[] dy = { 0, 0, 1, -1 };
-            for (int d = 0; d < 4; d++) {
-                int xn = x + dx[d];
-                int yn = y + dy[d];
-                if (xn < 0 || xn >= grid.length || yn < 0 || yn >= grid[0].length) {
-                    continue;
-                }
-                if (grid[xn][yn] - grid[x][y] != 1) {
-                    continue;
-                }
-                queue.add(new int[] { xn, yn });
-            }
-        }
-        return ret;
+            visited[xn][yn] = true;
+            return new int[] { xn, yn };
+        });
     }
 
     static int trails(int[][] grid, int i, int j) {
-        int ret = 0;
-        Queue<List<int[]>> queue = new LinkedList<>();
-        queue.add(new ArrayList<>(Arrays.asList(new int[] { i, j })));
-        while (!queue.isEmpty()) {
-            List<int[]> current = queue.poll();
-            int x = current.get(current.size() - 1)[0];
-            int y = current.get(current.size() - 1)[1];
-            if (grid[x][y] == 9) {
-                ret ++;
+        Search<List<int[]>> search = new Search<>(grid, new ArrayList<>(Arrays.asList(new int[] { i, j })), (List<int[]> current) -> {
+            return current.get(current.size() - 1);
+        });
+        return search.search((List<int[]> current, int xn, int yn) -> {
+            if (current.contains(new int[] { xn, yn })) {
+                return null;
             }
-
-            int[] dx = { 1, -1, 0, 0 };
-            int[] dy = { 0, 0, 1, -1 };
-            for (int d = 0; d < 4; d++) {
-                int xn = x + dx[d];
-                int yn = y + dy[d];
-                if (xn < 0 || xn >= grid.length || yn < 0 || yn >= grid[0].length) {
-                    continue;
-                }
-                if (grid[xn][yn] - grid[x][y] != 1) {
-                    continue;
-                }
-                if (current.contains(new int[] { xn, yn })) {
-                    continue;
-                }
-                List<int[]> new_current = new ArrayList<>(current);
-                new_current.add(new int[] { xn, yn });
-                queue.add(new_current);
-            }
-        }
-        return ret;
+            List<int[]> new_current = new ArrayList<>(current);
+            new_current.add(new int[] { xn, yn });
+            return new_current;
+        });
     }
 
     public static void main(String[] args) {
