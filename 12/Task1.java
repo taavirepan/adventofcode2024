@@ -10,22 +10,16 @@ class Task1 {
     }
 
     static int count_corners(int bits) {
-        if ((bits & 0b1111) == 0) {
-            return 4;
-        }
-
         int ret = 0;
         for (int i = 0; i < 4; i++) {
-            // String paddedBits = String.format("%8s", Integer.toBinaryString(bits)).replace(' ', '0');
-            // System.out.println(paddedBits.substring(0, 4) + " " + paddedBits.substring(4, 8));
             int nbors = bits & 0b1111;
             int diags = bits >> 4;
             bits = rot(bits);
 
-            if ((nbors & 0b1001) == 0) {
+            if ((nbors & 0b1001) == 0) { /* /\ corner */
                 ret ++;
             }
-            if ((nbors & 0b1001) == 0b1000 && (diags & 0b1000) != 0) {
+            if ((nbors & 0b1001) == 0b1000 && (diags & 0b1000) != 0) { /* \/ corner */
                 ret ++;
             }
         }
@@ -39,12 +33,6 @@ class Task1 {
         int edges = 0;
         List<int[]> stack = new ArrayList<>();
         stack.add(new int[] { x, y });
-
-        char[][] dbg = new char[grid.length][grid[0].length];
-        for (int i = 0; i < grid.length; i++) {
-            Arrays.fill(dbg[i], ' ');
-        }
-        
 
         while (!stack.isEmpty()) {
             int[] p = stack.remove(0);
@@ -78,19 +66,9 @@ class Task1 {
                 }
                 
             }
-            // if (px != 4 || py != 4) {
-            //     continue;
-            // }
-            String paddedBits = String.format("%8s", Integer.toBinaryString(bits)).replace(' ', '0');
             int corners = count_corners(bits);
-            // System.out.println("(" + (px+1) + ", " + (py+1) + "): " + paddedBits + " " + corners);
             edges += corners;
-            dbg[px][py] = (char) (corners + '0');
         }
-        // for (int i = 0; i < dbg.length; i++) {
-        //     System.out.println(new String(dbg[i]));
-        // }
-        // System.out.println(area + " " + perimeter + " " + edges);
         return new int[] { area * perimeter, area * edges };
     }
 
@@ -105,14 +83,9 @@ class Task1 {
             for (int j = 0; j < grid[i].length; j++) {
                 if ((grid[i][j] & 256) == 0) {
                     char c = grid[i][j];
-                    // if (c != 'C') {
-                    //     continue;
-                    // }
-
                     int[] r = find_region(grid, i, j);
                     ret[0] += r[0];
                     ret[1] += r[1];
-                    System.out.println(c + " " + r[0] + " " + r[1]);
                 }
             }
         }
