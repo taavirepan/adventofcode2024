@@ -41,25 +41,22 @@ class Task1 {
 
     static int evolve(List<int[]> robots, int w, int h) {
         int[][] state = robots.toArray(new int[robots.size()][4]);
-        int maxSymmetry = 0;
+        int bestCloseness = Integer.MAX_VALUE;
         for (int i = 0; i < 10000; i++) {
-            boolean[][] grid = new boolean[h][w];
-            int symmetry = 0;
-            for (int[] robot : state) {
-                int vx = (robot[2] + w) % w;
-                int vy = (robot[3] + h) % h;
-                robot[0] = (robot[0] + vx) % w;
-                robot[1] = (robot[1] + vy) % h;
-                grid[robot[1]][robot[0]] = true;
-                if (grid[h - robot[1] - 1][robot[0]]) {
-                    symmetry++;
+            int closeness = 0;
+            
+            for (int j = 0; j < state.length; j++) {
+                int vx = (state[j][2] + w) % w;
+                int vy = (state[j][3] + h) % h;
+                state[j][0] = (state[j][0] + vx) % w;
+                state[j][1] = (state[j][1] + vy) % h;
+                for (int k = 0; k < j; k++) {
+                    closeness += Math.abs(state[j][0] - state[k][0]) + Math.abs(state[j][1] - state[k][1]);
                 }
             }
-            if (symmetry > maxSymmetry) {
-                /* this was lucky accident that this check worked, I'm
-                   not even sure if does even work correctly */
-                maxSymmetry = symmetry;
-                System.out.println(i + ": " + symmetry);
+            if (closeness < bestCloseness) {
+                bestCloseness = closeness;
+                System.out.println((i + 1) + ": " + closeness);
                 printState(state, w, h);
             }
         }
