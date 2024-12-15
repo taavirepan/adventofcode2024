@@ -1,6 +1,7 @@
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
 class MapElement {
     int x, y;
     int width;
@@ -17,32 +18,13 @@ class MapElement {
         if (this.y != y) {
             return false;
         }
-        // for (int x1 = this.x; x1 < this.x + this.width; x1++) {
-        //     for (int x2 = x; x2 < x + width; x2++) {
-        //         if (x1 == x2) {
-        //             return true;
-        //         }
-        //     }
-        // }
-        // return false;
         return this.x + this.width > x && this.x < x + width;
-    }
-
-    @Override
-    public String toString() {
-        return "MapElement{" +
-                "x=" + x +
-                ", y=" + y +
-                ", width=" + width +
-                ", isWall=" + isWall +
-                '}';
     }
 }
 
 class Map {
     List<MapElement> elements;
     int robotX, robotY;
-    int size;
 
     Map() {
         this.elements = new ArrayList<>();
@@ -64,7 +46,6 @@ class Map {
             }
             x += dx;
         }
-        size = y + 1;
     }
 
     void forEachAt(int x, int y, Consumer<MapElement> consumer) {
@@ -117,42 +98,6 @@ class Map {
         ret = ret.stream().distinct().collect(Collectors.toList());
         return ret;
     }
-
-    void print() {
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < 2*size; x++) {
-                List<MapElement> el = new ArrayList<>();
-                forEachAt(x, y, el::add);
-                if (el.size() > 1) {
-                    throw new RuntimeException("Multiple elements at " + x + ", " + y);
-                }
-                if (robotX == x && robotY == y) {
-                    System.out.print("@");
-                    if (!el.isEmpty()) {
-                        throw new RuntimeException("Overlapping robot and element");
-                    }
-                } else if (el.isEmpty()) {
-                    System.out.print(".");
-                } else if (el.get(0).isWall) {
-                    System.out.print("#");
-                } else {
-                    System.out.print("[]");
-                    x ++;
-                }
-            }
-            System.out.println();
-        }
-    }
-
-    void sanityCheck() {
-        for (var element : elements) {
-            for (var other : elements) {
-                if (element != other && element.overlaps(other.x, other.y, other.width)) {
-                    throw new RuntimeException("Overlapping elements: " + element + " and " + other);
-                }
-            }
-        }
-    }
 }
 
 class Task2 {
@@ -168,7 +113,6 @@ class Task2 {
 
     static int execute(Map map, String commands) {
         for (char command : commands.toCharArray()) {
-            // map.print();
             int dx = 0, dy = 0;
             switch (command) {
                 case 'v' -> dy = 1;
@@ -180,19 +124,13 @@ class Task2 {
             if (elements == null) {
                 continue;
             }
-            // if (elements.size() > 1) {
-            //     map.print();
-            //     System.out.println(command + ": " + elements);
-            // }
             for (var element : elements) {
                 element.x += dx;
                 element.y += dy;
             }
             map.robotX += dx;
             map.robotY += dy;
-            // map.sanityCheck();
         }
-        // map.print();
         int ret = 0;
         for (var element : map.elements) {
             if (!element.isWall) {
