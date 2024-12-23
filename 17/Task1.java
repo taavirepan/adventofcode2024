@@ -44,31 +44,26 @@ class Task1 {
         return true;
     }
 
-    static Map<Integer, Integer> subsolve(List<Integer> numbers, int num, long start, int shift) {
+    static Set<Integer> subsolve(List<Integer> numbers, int num, long start, int shift) {
         long[] registers = {0, 0, 0};
         List<Integer> program = numbers.subList(3, numbers.size());
-        Map<Integer, Integer> counts = new HashMap<>();
+        Set<Integer> counts = new HashSet<>();
         for (long i = 0; i < 1L << 16; i++) {
             registers[0] = start | (i << shift);
             List<Integer> check = new ArrayList<>();
             run(registers, program, check::add, num);
             if (check.subList(0, num).equals(program.subList(0, num))) {
                 int pattern = (int)(i & ((1 << 8) - 1));
-                counts.put(pattern, counts.getOrDefault(pattern, 0) + 1);
+                counts.add(pattern);
             }
         }
-        // System.out.println(counts);
-        // for (int key : counts.keySet()) {
-        //     String s = String.format("%8s", Integer.toBinaryString(key)).replace(' ', '0');
-        //     System.out.println(s + " (" + key + "): " + counts.get(key));
-        // }
         return counts;
     }
 
     static long task2(List<Integer> numbers, int num, long start, int shift) {
-        Map<Integer, Integer> counts = subsolve(numbers, num, start, shift);
+        Set<Integer> counts = subsolve(numbers, num, start, shift);
         long ret = Long.MAX_VALUE;
-        for (int key : counts.keySet()) {
+        for (int key : counts) {
             long next = start | ((long)key << shift);
             if (num == 15) {
                 ret = Math.min(ret, task2(numbers, num + 1, next, shift + 8));
