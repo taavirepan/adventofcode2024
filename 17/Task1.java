@@ -4,15 +4,15 @@ import java.util.function.IntPredicate;
 import java.util.regex.*;
 
 class Task1 {
-    static boolean run(List<Integer> numbers, IntPredicate predicate) {
-        int[] registers = numbers.subList(0, 3).stream().mapToInt(Integer::intValue).toArray();
-        int[] program = numbers.subList(3, numbers.size()).stream().mapToInt(Integer::intValue).toArray();
+    static boolean run(long[] registersIn, List<Integer> numbers, IntPredicate predicate, int loops) {
+        long[] registers = Arrays.copyOf(registersIn, 3);
+        int[] program = numbers.stream().mapToInt(Integer::intValue).toArray();
 
         int ip = 0;
         while (ip < program.length) {
             int opcode = program[ip];
             int literal = program[ip+1];
-            int combo = switch (literal) {
+            long combo = switch (literal) {
                 case 4 -> registers[0];
                 case 5 -> registers[1];
                 case 6 -> registers[2];
@@ -25,15 +25,67 @@ class Task1 {
 
                 case 1 -> {registers[1] = registers[1] ^ literal;}
                 case 2 -> {registers[1] = combo % 8;}
-                case 3 -> {ip = (registers[0] != 0) ? literal - 2 : ip;}
+                case 3 -> {
+                    if (loops == -1) {
+                        ip = (registers[0] != 0) ? literal - 2 : ip;
+                    }
+                    else if (loops > 0){
+                        ip = literal - 2;
+                        loops --;
+                    }
+                }
                 case 4 -> {registers[1] = registers[1] ^ registers[2];}
-                case 5 -> {if (!predicate.test(combo % 8)) {return false;}}
+                case 5 -> {if (!predicate.test((int)(combo % 8))) {return false;}}
 
                 default -> throw new RuntimeException("Unknown opcode: " + opcode);
             }
             ip += 2;
         }
         return true;
+    }
+
+    static Map<Integer, Integer> subsolve(List<Integer> numbers, int num, long start, int shift) {
+        long[] registers = {0, 0, 0};
+        List<Integer> program = numbers.subList(3, numbers.size());
+        Map<Integer, Integer> counts = new HashMap<>();
+        for (long i = 0; i < 1L << 16; i++) {
+            registers[0] = start | (i << shift);
+            List<Integer> check = new ArrayList<>();
+            run(registers, program, check::add, num);
+            if (check.subList(0, num).equals(program.subList(0, num))) {
+                int pattern = (int)(i & ((1 << 8) - 1));
+                counts.put(pattern, counts.getOrDefault(pattern, 0) + 1);
+            }
+        }
+        // System.out.println(counts);
+        // for (int key : counts.keySet()) {
+        //     String s = String.format("%8s", Integer.toBinaryString(key)).replace(' ', '0');
+        //     System.out.println(s + " (" + key + "): " + counts.get(key));
+        // }
+        return counts;
+    }
+
+    static long task2(List<Integer> numbers, int num, long start, int shift) {
+        Map<Integer, Integer> counts = subsolve(numbers, num, start, shift);
+        long ret = Long.MAX_VALUE;
+        for (int key : counts.keySet()) {
+            long next = start | ((long)key << shift);
+            if (num == 15) {
+                ret = Math.min(ret, task2(numbers, num + 1, next, shift + 8));
+            }
+            else if (num == 16) {
+                long registers[] = {next, 0, 0};
+                List<Integer> result = new ArrayList<>();
+                run(registers, numbers.subList(3, numbers.size()), result::add, -1);
+                if (result.equals(numbers.subList(3, numbers.size()))) {
+                    ret = Math.min(ret, next);
+                }
+            }
+            else {
+                ret = Math.min(ret, task2(numbers, num + 3, next, shift + 8));
+            }
+        }
+        return ret;
     }
 
     public static void main(String[] args) throws IOException {
@@ -48,23 +100,12 @@ class Task1 {
             }
         }
         {
+            long[] registers = numbers.subList(0, 3).stream().mapToLong(Integer::longValue).toArray();
             List<Integer> result = new ArrayList<>();
-            run(numbers, i -> {result.add(i); return true;});
+            run(registers, numbers.subList(3, numbers.size()), i -> {result.add(i); return true;}, -1);
             System.out.println(String.join(",", result.stream().map(Object::toString).toArray(String[]::new)));
         }
 
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; ; i++) {
-            int[] j = {3};
-            numbers.set(0, i);
-            if (run(numbers, x -> j[0] == numbers.size() || numbers.get(j[0]++) == x) && j[0] == numbers.size()) {
-                System.out.println("Task2=" + i);
-                break;
-            }
-            if (i > 0 && i % 10000000 == 0) {
-                long secondsElapsed = (System.currentTimeMillis() - startTime) / 1000;
-                System.out.println("Iteration: " + i / 1000000 + "M, Seconds Elapsed: " + secondsElapsed);
-            }
-        }
+        System.out.println(task2(numbers, 3, 0, 0));
     }
 }
